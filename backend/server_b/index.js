@@ -149,6 +149,15 @@ const run = async () => {
       }
     });
 
+    // Add health endpoint
+    app.get('/health', (req, res) => {
+      // Basic health check without Kafka dependency
+      res.status(200).json({ 
+        status: 'healthy',
+        timestamp: new Date().toISOString()
+      });
+    });
+
     const port = process.env.PORT || 3001;
     app.listen(port, () => console.log(`Server B running on port ${port}`));
   } catch (error) {
