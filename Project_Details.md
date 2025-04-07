@@ -158,17 +158,17 @@ We also want to improve the appearance of the front end. Right now, it is functi
 
 ## Project Timeline and Task Distribution
 
-### Sprint 1: Setup and Basic Implementation
+### Milestone 1: Setup and Basic Implementation
 - Basic project structure
 - Docker configuration
 - Initial service setup
 
-### Sprint 2: Core Features
+### Milestone 2: Core Features
 - Video streaming implementation
 - WebSocket setup
 - Kafka integration
 
-### Sprint 3: Enhancement and Testing
+### Milestone 3: Enhancement and Testing
 - UI improvements
 - Error handling
 - Performance optimization
