@@ -120,6 +120,7 @@ A real-time video streaming platform with emote analysis capabilities, built usi
 
 ### 1. Service Communication
 **Challenge**: Reliable communication between microservices
+
 **Solution**:
 - Implemented Kafka for message queuing
 - Added health checks for services
@@ -128,6 +129,7 @@ A real-time video streaming platform with emote analysis capabilities, built usi
 
 ### 2. Real-time Updates
 **Challenge**: Maintaining WebSocket connections and real-time data flow
+
 **Solution**:
 - Implemented reconnection logic
 - Added message queuing for missed updates
