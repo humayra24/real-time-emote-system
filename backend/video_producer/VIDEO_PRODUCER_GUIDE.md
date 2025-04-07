@@ -75,9 +75,6 @@ npm start
 # Build the image
 docker build -t video_producer .
 
-# Run the container
-docker run -v /path/to/video:/app/videos -e KAFKA_BROKER=your_kafka_broker video_producer
-```
 
 ## Video Processing Details
 
