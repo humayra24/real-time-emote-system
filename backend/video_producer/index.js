@@ -65,7 +65,7 @@ const streamVideo = async () => {
       });
       
       chunkIndex++;
-      // Add a small delay between chunks to prevent overwhelming
+      // Add a small delay between chunks 
       await new Promise(resolve => setTimeout(resolve, 50));
     } catch (error) {
       console.error('Error sending chunk:', error);
