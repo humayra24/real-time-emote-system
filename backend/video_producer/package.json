@@ -1,0 +1,17 @@
+{
+  "name": "video_producer",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"No tests specified\""
+  },
+  "keywords": [],
+  "author": "HT Squad",
+  "license": "ISC",
+  "type": "commonjs",
+  "description": "Video producer service for streaming video chunks to Kafka",
+  "dependencies": {
+    "kafkajs": "^2.2.4"
+  }
+}
