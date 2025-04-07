@@ -1,51 +1,107 @@
-# This is the docker-compose-yml file that must be able to start
-# your group's backend.
-
-# Remember to comment this file well!
-
 services:
+  kafka:
+    image: bitnami/kafka:latest
+    environment:
+      - KAFKA_CFG_NODE_ID=1
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+      - KAFKA_CFG_NUM_PARTITIONS=1
+      - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR=1
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "kafka-topics.sh", "--list", "--bootstrap-server", "kafka:9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
-  # You can base this service on a bitnami/kafka Docker Hub image.
-  # You need to expose the kafka port to other containers
-  # in this  docker-compose.yml
-  # A set of needed Docker instructions like 'image:' are shown
-  # below, groups should set their values. Groups are free to
-  # CRUD the set of instructions as they see fit.
-#  kafka:
-#    image:
-#    networks:
-#    ports:
-#    environment:
-
-  server_a:
-    build: ./backend/server_a
-    ports:
-      - "3000:3000"
+  emotegen:
+    build: ./backend/emotegen
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
     environment:
       - KAFKA_BROKER=kafka:9092
     networks:
       - backend
 
-  # much of the server_b service entry can be copied from server_a
-  # service above. Groups are free to
-  # CRUD this set of instructions as they see fit.
-  # server_b:
-      # build:
-      # depends_on:
-      # environment:
-      # networks:
+  server_a:
+    build: ./backend/server_a
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      - KAFKA_BROKER=kafka:9092
+      - PORT=3003
+    ports:
+      - "3003:3003"
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "node", "healthcheck.js"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
-# Here we create a named network, that all the backend components
-# must be added to for them to be able to communicate through
-# exposed ports.
+  server_b:
+    build: ./backend/server_b
+    ports:
+      - "3001:3001"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      - KAFKA_BROKER=kafka:9092
+      - PORT=3001
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "node", "healthcheck.js"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  video_producer:
+    build: ./backend/video_producer
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      - KAFKA_BROKER=kafka:9092
+      - VIDEO_PATH=/app/videos/video.mp4
+    volumes:
+      - ./videos:/app/videos:ro
+    networks:
+      - backend
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3002:80"
+    environment:
+      - REACT_APP_WS_URL=ws://server_a:3003/ws
+      - REACT_APP_API_URL=http://server_b:3001
+    networks:
+      - backend
+    depends_on:
+      server_a:
+        condition: service_healthy
+      server_b:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
 networks:
   backend:
-
-# If you use databases for storing information, you can define
-# their volumes here.
-# Documentation: https://docs.docker.com/storage/volumes/
-# Personally I like to look at the database's image's Dockerfile
-# in the Docker Hub to see what directory it uses to store data.
-# volumes:
+    driver: bridge
