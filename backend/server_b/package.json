@@ -1,0 +1,15 @@
+{
+    "name": "server_b",
+    "version": "1.0.0",
+    "description": "Processes raw emote data and exposes a REST API",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js"
+    },
+    "author": "HT Squad",
+    "license": "ISC",
+    "dependencies": {
+        "express": "^5.1.0",
+        "kafkajs": "^2.2.4"
+    }
+}
