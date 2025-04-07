@@ -21,6 +21,23 @@ A real-time video streaming platform with emote analysis capabilities, built usi
 - Configurable settings for emote analysis
 - Microservices architecture with Kafka message broker
 
+## Project Timeline and Task Distribution
+
+### Milestone 1: Setup and Basic Implementation
+- Basic project structure
+- Docker configuration
+- Initial service setup
+
+### Milestone 2: Core Features
+- Video streaming implementation
+- WebSocket setup
+- Kafka integration
+
+### Milestone 3: Enhancement and Testing
+- UI improvements
+- Error handling
+- Performance optimization
+
 ### Architecture Overview
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
@@ -155,23 +172,6 @@ A real-time video streaming platform with emote analysis capabilities, built usi
 Right now, we are not using a database in our project. All the data—like emotes and video chunks—flows through Kafka, which handles everything in real time without needing storage. We have thought about adding a database later, like MongoDB or PostgreSQL, to save things like emote history or video metadata. MongoDB could work well because of its flexibility with unstructured data, while PostgreSQL might be better for structured tables and queries. We wll decide if and when we need it as the project grows.
 On the video streaming front, we have encountered a problem. The video appears in the web browser but is stuck on “loading” and is not streaming like live video yet. Meanwhile, the emotes are working perfectly—they pop up in real-time on the front end as expected. We think the video file might not be in the right format for streaming, or maybe the way we are sending chunks through Kafka and the MediaSource API is not quite right. We plan to study this more—looking into supported video formats (like MP4 with specific codecs) and debugging the streaming setup—to figure out how to make it play smoothly.
 We also want to improve the appearance of the front end. Right now, it is functional but pretty basic. We will try to improve the design—to make it more interactive and easy to use.
-
-## Project Timeline and Task Distribution
-
-### Milestone 1: Setup and Basic Implementation
-- Basic project structure
-- Docker configuration
-- Initial service setup
-
-### Milestone 2: Core Features
-- Video streaming implementation
-- WebSocket setup
-- Kafka integration
-
-### Milestone 3: Enhancement and Testing
-- UI improvements
-- Error handling
-- Performance optimization
 
 ## Testing
 
