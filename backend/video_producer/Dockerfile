@@ -9,7 +9,9 @@ RUN npm install
 COPY . .
 
 # Create videos directory
-RUN mkdir -p /app/videos
+# RUN mkdir -p /app/videos
+
+VOLUME /app/videos
 
 # Expose port (if needed)
 EXPOSE 3002
