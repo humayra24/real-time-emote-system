@@ -16,5 +16,43 @@
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
+
+    <!-- <input type="file" />
+    <video controls id="video"></video>
+    <script>
+      const video = document.getElementById("video");
+      const fileInput = document.querySelector('input[type="file"]');
+      const mimeCodec = 'video/mp4; codecs="avc1.42E01E, mp4a.40.2"';
+      const mediaSource = new MediaSource();
+
+      video.src = URL.createObjectURL(mediaSource);
+
+      mediaSource.addEventListener("sourceopen", () => {
+        console.log("sourceopen");
+        const sourceBuffer = mediaSource.addSourceBuffer(mimeCodec);
+        sourceBuffer.addEventListener("updateend", () => {
+          console.log(
+            "buffered",
+            sourceBuffer.buffered.length,
+            sourceBuffer.buffered.start(0),
+            sourceBuffer.buffered.end(0)
+          );
+        });
+      });
+
+      const delay = (secs) =>
+        new Promise((resolve) => setTimeout(resolve, secs * 1000));
+      fileInput.addEventListener("change", async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        const buffer = await file.arrayBuffer();
+        for (let i = 0; i < buffer.byteLength; i += 1024 * 1024) {
+          const chunk = buffer.slice(i, i + 1024 * 1024);
+          mediaSource.sourceBuffers[0].appendBuffer(chunk);
+          await delay(1);
+        }
+        mediaSource.endOfStream();
+      });
+    </script> -->
   </body>
-</html> 
+</html>

@@ -240,6 +240,50 @@ body {
   animation: fade-in-out 3s ease;
 }
 
+.emote-buttons {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.emote-button {
+  font-size: 1.5rem;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #f0f0f0;
+  transition: transform 0.2s;
+}
+
+.emote-button:hover {
+  transform: scale(1.2);
+}
+
+.emote-animation-container {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  margin: 20px auto;
+}
+
+.emote {
+  position: absolute;
+  font-size: 2rem;
+  animation: float-up 2s ease-out forwards;
+}
+
+@keyframes float-up {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100px);
+  }
+}
+
 @keyframes fade-in-out {
   0%,
   100% {

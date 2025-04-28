@@ -16,14 +16,16 @@ function App() {
   const [wsConnected, setWsConnected] = useState(false);
   const [error, setError] = useState(null);
   let sourceBuffer = null;
+  const wsRef = useRef(null);
 
   // Single WebSocket connection for both video and emote data
   useEffect(() => {
     const wsUrl = process.env.REACT_APP_WS_URL || "ws://localhost:3003/ws";
-    console.log("Connecting to WebSocket at:", wsUrl);
+    // console.log("Connecting to WebSocket at:", wsUrl);
     const ws = new WebSocket(wsUrl);
+    wsRef.current = ws;
+
     const videoElement = videoRef.current;
-    // let mediaSource = new MediaSource();
     const mediaSource = mediaSourceRef.current;
     let queue = [];
     let isInitialized = false;
@@ -43,21 +45,17 @@ function App() {
         // Create a SourceBuffer for the video stream
         sourceBuffer = mediaSource.addSourceBuffer(codec);
         console.log("SourceBuffer added with codec:", codec);
-        // sourceBuffer = mediaSource.addSourceBuffer(
-        //   'video/mp4; codecs="avc1.42E01E,mp4a.40.2"'
-        // );
-        // isInitialized = true;
-        // console.log("MediaSource initialized with codec");
 
         // Handle SourceBuffer updateend event
         sourceBuffer.addEventListener("updateend", () => {
           if (queue.length > 0 && !sourceBuffer.updating) {
             const chunk = queue.shift();
+            console.log(chunk);
             try {
               sourceBuffer.appendBuffer(chunk.data);
-              console.log("Appended chunk from queue, index:", chunk.index);
+              // console.log("Appended chunk from queue, index:", chunk.index);
             } catch (e) {
-              console.error("Error appending buffer from queue:", e);
+              // console.error("Error appending buffer from queue:", e);
               if (
                 e.name === "QuotaExceededError" &&
                 sourceBuffer.buffered.length > 0
@@ -69,27 +67,6 @@ function App() {
             }
           }
         });
-        // sourceBuffer.addEventListener("updateend", () => {
-        //   if (queue.length > 0 && !sourceBuffer.updating) {
-        //     const chunk = queue.shift();
-
-        //     try {
-        //       sourceBuffer.appendBuffer(chunk.data);
-        //       console.log("Appended chunk from queue, index:", chunk.index);
-        //     } catch (e) {
-        //       console.error("Error appending buffer from queue:", e);
-
-        //       if (
-        //         e.name === "QuotaExceededError" &&
-        //         sourceBuffer.buffered.length > 0
-        //       ) {
-        //         const start = sourceBuffer.buffered.start(0);
-        //         const end = sourceBuffer.buffered.end(0);
-        //         sourceBuffer.remove(start, end - 10); // Remove all but last 10 seconds
-        //       }
-        //     }
-        //   }
-        // });
 
         // Handle SourceBuffer error event
         sourceBuffer.addEventListener("error", (e) => {
@@ -112,11 +89,9 @@ function App() {
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        console.log("Received message:", data);
-        console.log("Received message type:", data.type);
-
-        console.log("TESTING");
-        console.log("MediaSource state:", mediaSource.readyState);
+        // console.log("Received message:", data);
+        // console.log("Received message type:", data.type);
+        // console.log("MediaSource state:", mediaSource.readyState);
 
         if (data.type === "welcome") {
           console.log("Received welcome message:", data);
@@ -130,26 +105,23 @@ function App() {
           setTimeout(() => {
             setAnimatedEmotes((prev) => prev.slice(emoteBurst.length));
           }, 2000); // Match animation duration
-
-          // } else if (data.type === "video" && isInitialized) {
         } else if (data.type === "video" && mediaSource.readyState === "open") {
-          return;
           try {
-            console.log("Processing video chunk:", data.index);
+            // console.log("Processing video chunk:", data.index);
             const binaryString = atob(data.chunk);
             const bytes = new Uint8Array(binaryString.length);
             for (let i = 0; i < binaryString.length; i++) {
               bytes[i] = binaryString.charCodeAt(i);
             }
 
-            console.log("Video chunk bytes:", bytes);
+            // console.log("Video chunk bytes:", bytes);
 
             if (!sourceBuffer.updating) {
               try {
                 sourceBuffer.appendBuffer(bytes);
-                console.log("Appended chunk directly, index:", data.index);
+                // console.log("Appended chunk directly, index:", data.index);
               } catch (e) {
-                console.error("Error appending buffer directly:", e);
+                // console.error("Error appending buffer directly:", e);
                 if (
                   e.name === "QuotaExceededError" &&
                   sourceBuffer.buffered.length > 0
@@ -161,23 +133,23 @@ function App() {
               }
             } else {
               queue.push({ data: bytes, index: data.index });
-              console.log("Queued chunk, index:", data.index);
+              // console.log("Queued chunk, index:", data.index);
             }
 
             // Start playing when there's some data
             if (!videoElement.playing && sourceBuffer.buffered.length > 0) {
               videoElement.play().catch((e) => {
-                console.error("Error playing video:", e);
+                // console.error("Error playing video:", e);
                 setError("Error playing video: " + e.message);
               });
             }
           } catch (e) {
-            console.error("Error processing video chunk:", e);
+            // console.error("Error processing video chunk:", e);
             setError("Error processing video: " + e.message);
           }
         }
       } catch (error) {
-        console.error("Error processing message:", error);
+        // console.error("Error processing message:", error);
         setError("Error processing message: " + error.message);
       }
     };
@@ -202,36 +174,6 @@ function App() {
     };
   }, []);
 
-  // Fetch initial settings
-  useEffect(() => {
-    fetch("/api/settings")
-      .then((res) => res.json())
-      .then(setSettings)
-      .catch((err) => console.error("Error fetching settings:", err));
-  }, []);
-
-  const updateSettings = (newSettings) => {
-    fetch("/api/settings", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newSettings),
-    })
-      .then(() => setSettings(newSettings))
-      .catch((err) => console.error("Error updating settings:", err));
-  };
-
-  // const handleUpload = (event) => {
-  //   const file = event.target.files[0];
-  //   if (file) {
-  //     const reader = new FileReader();
-  //     reader.onload = (e) => {
-  //       const data = e.target.result;
-  //       mediaSourceRef.current.sourceBuffers[0].appendBuffer(data);
-  //     };
-  //     reader.readAsArrayBuffer(file);
-  //   }
-  // };
-
   useEffect(() => {
     if (moments.length > 0) {
       // Change the background color when a new moment is added
@@ -245,6 +187,15 @@ function App() {
       return () => clearTimeout(timeout); // Cleanup the timeout on unmount or when moments change
     }
   }, [moments]);
+
+  const sendEmote = (emote) => {
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: "emote", emote }));
+      console.log("Sent emote:", emote);
+    } else {
+      console.error("WebSocket is not connected");
+    }
+  };
 
   return (
     <div className="App">
@@ -264,6 +215,17 @@ function App() {
       <main>
         <h2>Video Stream</h2>
         <video ref={videoRef} controls autoPlay width="600" />
+        <div className="emote-buttons">
+          {settings.allowedEmotes.map((emote, index) => (
+            <button
+              key={index}
+              className="emote-button"
+              onClick={() => sendEmote(emote)}
+            >
+              {emote}
+            </button>
+          ))}
+        </div>
         {moments.length > 0 && (
           <div className="notification">
             New significant moment: {moments[moments.length - 1].emote}
