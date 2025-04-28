@@ -93,60 +93,68 @@ function App() {
         // console.log("Received message type:", data.type);
         // console.log("MediaSource state:", mediaSource.readyState);
 
-        if (data.type === "welcome") {
-          console.log("Received welcome message:", data);
-        } else if (data.type === "emote") {
-          setMoments((prev) => [...prev, data].slice(-10));
+        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+          if (data.type === "welcome") {
+            console.log("Received welcome message:", data);
+          } else if (data.type === "emote") {
+            // Process significant moments and emote bursts
+            setMoments((prev) => [...prev, data].slice(-10));
 
-          const emoteBurst = Array(5).fill(data.emote); // Create an array of 5 emotes
-          setAnimatedEmotes((prev) => [...prev, ...emoteBurst]);
+            const emoteBurst = Array(5).fill(data.emote); // Create an array of 5 emotes
+            setAnimatedEmotes((prev) => [...prev, ...emoteBurst]);
 
-          // Remove emotes after animation
-          setTimeout(() => {
-            setAnimatedEmotes((prev) => prev.slice(emoteBurst.length));
-          }, 2000); // Match animation duration
-        } else if (data.type === "video" && mediaSource.readyState === "open") {
-          try {
-            // console.log("Processing video chunk:", data.index);
-            const binaryString = atob(data.chunk);
-            const bytes = new Uint8Array(binaryString.length);
-            for (let i = 0; i < binaryString.length; i++) {
-              bytes[i] = binaryString.charCodeAt(i);
-            }
-
-            // console.log("Video chunk bytes:", bytes);
-
-            if (!sourceBuffer.updating) {
-              try {
-                sourceBuffer.appendBuffer(bytes);
-                // console.log("Appended chunk directly, index:", data.index);
-              } catch (e) {
-                // console.error("Error appending buffer directly:", e);
-                if (
-                  e.name === "QuotaExceededError" &&
-                  sourceBuffer.buffered.length > 0
-                ) {
-                  const start = sourceBuffer.buffered.start(0);
-                  const end = sourceBuffer.buffered.end(0);
-                  sourceBuffer.remove(start, end - 10);
-                }
+            // Remove emotes after animation
+            setTimeout(() => {
+              setAnimatedEmotes((prev) => prev.slice(emoteBurst.length));
+            }, 5000);
+          } else if (
+            data.type === "video" &&
+            mediaSource.readyState === "open"
+          ) {
+            try {
+              // console.log("Processing video chunk:", data.index);
+              const binaryString = atob(data.chunk);
+              const bytes = new Uint8Array(binaryString.length);
+              for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
               }
-            } else {
-              queue.push({ data: bytes, index: data.index });
-              // console.log("Queued chunk, index:", data.index);
-            }
 
-            // Start playing when there's some data
-            if (!videoElement.playing && sourceBuffer.buffered.length > 0) {
-              videoElement.play().catch((e) => {
-                // console.error("Error playing video:", e);
-                setError("Error playing video: " + e.message);
-              });
+              // console.log("Video chunk bytes:", bytes);
+
+              if (!sourceBuffer.updating) {
+                try {
+                  sourceBuffer.appendBuffer(bytes);
+                  // console.log("Appended chunk directly, index:", data.index);
+                } catch (e) {
+                  // console.error("Error appending buffer directly:", e);
+                  if (
+                    e.name === "QuotaExceededError" &&
+                    sourceBuffer.buffered.length > 0
+                  ) {
+                    const start = sourceBuffer.buffered.start(0);
+                    const end = sourceBuffer.buffered.end(0);
+                    sourceBuffer.remove(start, end - 10);
+                  }
+                }
+              } else {
+                queue.push({ data: bytes, index: data.index });
+                // console.log("Queued chunk, index:", data.index);
+              }
+
+              // Start playing when there's some data
+              if (!videoElement.playing && sourceBuffer.buffered.length > 0) {
+                videoElement.play().catch((e) => {
+                  // console.error("Error playing video:", e);
+                  setError("Error playing video: " + e.message);
+                });
+              }
+            } catch (e) {
+              // console.error("Error processing video chunk:", e);
+              setError("Error processing video: " + e.message);
             }
-          } catch (e) {
-            // console.error("Error processing video chunk:", e);
-            setError("Error processing video: " + e.message);
           }
+        } else {
+          console.error("WebSocket is not in OPEN state");
         }
       } catch (error) {
         // console.error("Error processing message:", error);
@@ -197,10 +205,10 @@ function App() {
       // Change the background color when a new moment is added
       document.body.style.backgroundColor = "#add8e6"; // Light blue
 
-      // Reset the background color after 2 seconds
+      // Reset the background color after 5 seconds
       const timeout = setTimeout(() => {
         document.body.style.backgroundColor = "";
-      }, 2000);
+      }, 5000);
 
       return () => clearTimeout(timeout); // Cleanup the timeout on unmount or when moments change
     }
@@ -215,13 +223,14 @@ function App() {
     }
 
     // Add the flying emoji anuimation
-    const emoteBurst = Array(5).fill(emote); // Create an array of 5 emotes
-    setAnimatedEmotes((prev) => [...prev, ...emoteBurst]);
+    // const emoteBurst = Array(5).fill(emote); // Create an array of 5 emotes
+    setAnimatedEmotes((prev) => [...prev, emote]); // Add the emote to the animated emotes
+    // setAnimatedEmotes((prev) => [...prev, ...emoteBurst]);
 
     // Remove emotes after animation
     setTimeout(() => {
-      setAnimatedEmotes((prev) => prev.slice(emoteBurst.length));
-    }, 2000); // Match animation duration
+      setAnimatedEmotes((prev) => prev.filter((e) => e !== emote)); // Remove the emote after 2 seconds
+    }, 5000);
   };
 
   return (
@@ -241,7 +250,20 @@ function App() {
       </header>
       <main>
         <h2>Video Stream</h2>
-        <video ref={videoRef} controls autoPlay width="600" />
+        <div className="video-container">
+          <video ref={videoRef} controls autoPlay width="600" />
+          <div className="emote-animation-container">
+            {animatedEmotes.map((emote, index) => (
+              <span
+                key={index}
+                className="emote flying-emote"
+                style={{ "--random-offset": `${Math.random() * 200 - 100}px` }} // Random offset between -100px and 100px
+              >
+                {emote}
+              </span>
+            ))}
+          </div>
+        </div>
         <div className="emote-buttons">
           {settings.allowedEmotes.map((emote, index) => (
             <button
@@ -258,7 +280,7 @@ function App() {
             New significant moment: {moments[moments.length - 1].emote}
           </div>
         )}
-        <div className="emote-animation-container">
+        {/* <div className="emote-animation-container">
           {animatedEmotes.map((emote, index) => (
             <span
               key={index}
@@ -268,7 +290,7 @@ function App() {
               {emote}
             </span>
           ))}
-        </div>
+        </div> */}
         <div className="settings-and-moments">
           <div className="settings-form">
             <h2>Settings</h2>
