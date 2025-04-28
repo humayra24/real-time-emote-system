@@ -174,6 +174,24 @@ function App() {
     };
   }, []);
 
+  // Fetch initial settings
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((res) => res.json())
+      .then(setSettings)
+      .catch((err) => console.error("Error fetching settings:", err));
+  }, []);
+
+  const updateSettings = (newSettings) => {
+    fetch("/api/settings", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newSettings),
+    })
+      .then(() => setSettings(newSettings))
+      .catch((err) => console.error("Error updating settings:", err));
+  };
+
   useEffect(() => {
     if (moments.length > 0) {
       // Change the background color when a new moment is added
@@ -195,6 +213,15 @@ function App() {
     } else {
       console.error("WebSocket is not connected");
     }
+
+    // Add the flying emoji anuimation
+    const emoteBurst = Array(5).fill(emote); // Create an array of 5 emotes
+    setAnimatedEmotes((prev) => [...prev, ...emoteBurst]);
+
+    // Remove emotes after animation
+    setTimeout(() => {
+      setAnimatedEmotes((prev) => prev.slice(emoteBurst.length));
+    }, 2000); // Match animation duration
   };
 
   return (
