@@ -12,14 +12,19 @@
 
 ## Architecture and Design
 
-![Architecture.png](/uploads/69ffdce231c01282015b010cf0dae648/Architecture.png)
+![System architecture diagram](images/ArchDesign.png)
+
+
 
 ## Current State of Our Reacting in Real-Time System
 
-![WhatsApp Image 2025-04-29 at 4.28.04 PM \(1\).jpeg](/uploads/bcb24667f8998ccc422f8d6b5879a266/WhatsApp_Image_2025-04-29_at_4.28.04_PM__1_.jpeg)
+![Live emote reactions](images/img1.jpeg)
 
-![WhatsApp Image 2025-04-29 at 4.28.04 PM.jpeg](/uploads/96440c4c650ecd7c4abc20e54be56a9e/WhatsApp_Image_2025-04-29_at_4.28.04_PM.jpeg)
+### Significant moments detection
+![Significant moments](images/img2.jpeg)
 
-![WhatsApp Image 2025-04-29 at 4.28.24 PM.jpeg](/uploads/b77214821b097615f3dd93dbd38212e0/WhatsApp_Image_2025-04-29_at_4.28.24_PM.jpeg)
+### Multiple emotes overlay
+![Multiple emotes overlay](images/img3.jpeg)
 
-![WhatsApp Image 2025-04-29 at 4.28.56 PM.jpeg](/uploads/b99802b6775b7a6d935c653e0cafc75a/WhatsApp_Image_2025-04-29_at_4.28.56_PM.jpeg)
+### Final gameplay reaction view
+![Gameplay reaction view](images/img4.jpeg)
